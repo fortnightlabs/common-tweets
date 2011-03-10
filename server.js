@@ -13,6 +13,7 @@ var express = require('express')
       express.session({ secret: "rm5NxTVdmcpHquM9b9e4eZY3kD5uSaY" }),
       express.methodOverride(),
       express.errorHandler({ dumpExceptions: true, showStack: true }))
+  , nlp = require('./nlp')
   , noop = function() {};
 
 mongo.on('ready', function(db) {
@@ -26,6 +27,7 @@ mongo.on('ready', function(db) {
       twitter.apiCall('GET', '/statuses/friends_timeline.json', { token: user.token, count: 200, include_rts: 1 }, function(error, statuses) {
         if (error) throw error;
 
+        statuses.forEach(function(status) { status.text_parsed = nlp.parse(status.text); });
         res.render('index.jade', { locals: { user: user, statuses: statuses }});
       });
     });

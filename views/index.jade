@@ -1,3 +1,18 @@
 h1= user.name
 - each status in statuses
-  p= status.text
+  p
+    = status.text
+    table
+      thead
+        tr
+          th phrase
+          th POS
+          th stopword?
+          th stem
+      tbody
+        - each term in status.text_parsed
+          tr
+            td= term.phrase
+            td= term.pos
+            td= (term.stopword ? 'x' : '')
+            td= term.stem
