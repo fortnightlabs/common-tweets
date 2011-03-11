@@ -1,4 +1,23 @@
 h1= user.name
+
+style
+  .freqs table { float: left; width: 150px; padding: 0px 10px; border-left: 1px solid black; }
+  .freqs table:first-child { border-left: 0px }
+  .freqs { overflow: hidden }
+
+div.freqs
+  - each page in [1, 2, 3, 4, 5]
+    table
+      thead
+        tr
+          th stem
+          th count
+      tbody
+        - each stem in stems.topStems({ page: page })
+          tr
+            td= stem.stem
+            td= stem.count
+
 - each status in statuses
   p
     = status.text

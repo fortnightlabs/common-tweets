@@ -24,10 +24,16 @@ mongo.on('ready', function(db) {
       if (error) throw error;
 
       twitter.apiCall('GET', '/statuses/friends_timeline.json', { token: user.token, count: 200, include_rts: 1 }, function(error, statuses) {
+        var stems = new StemAggregator();
         if (error) throw error;
 
-        statuses.forEach(function(status) { status.text_parsed = nlp.parse(status.text); });
-        res.render('index.jade', { locals: { user: user, statuses: statuses }});
+        statuses.forEach(function(status) {
+          status.text_parsed = nlp.parse(status.text);
+          stems.addTokens(status.text_parsed);
+        });
+
+        res.render('index.jade', { locals: {
+          user: user, statuses: statuses, stems: stems }});
       });
     });
   });
@@ -60,3 +66,37 @@ mongo.on('ready', function(db) {
   db.users.ensureIndex('twitter_id', true, noop);
   db.statuses.ensureIndex('twitter_id', true, noop);
 });
+
+function StemAggregator() {
+  this.stems = {};
+}
+
+StemAggregator.prototype.addTokens = function(tokens) {
+  var self = this;
+  tokens.forEach(function(token) {
+    if (token && token.stem && !token.stopword) {
+      if (token.stem in self.stems) {
+        self.stems[token.stem] += 1;
+      } else {
+        self.stems[token.stem] = 1;
+      }
+    }
+  });
+};
+
+StemAggregator.prototype.topStems = function(options) {
+  var self = this
+    , page = options && options.page || 1
+    , per_page = options && options.per_page || 10
+    , start = (page - 1) * per_page
+    , end = start + per_page
+    , ret = [];
+
+  for (var k in self.stems) {
+    ret.push({ stem: k, count: self.stems[k] });
+  }
+
+  return ret.sort(function(a, b) {
+    return (a.count === b.count ? 0 : (a.count < b.count ? 1 : -1));
+  }).slice(start, end);
+};
