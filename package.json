@@ -2,22 +2,22 @@
   "name":         "common-tweet",
   "description":  "Extract common themes from tweets",
   "author":       "Fortnight Labs, LLC",
-  "version":      "0.0.1",
+  "version":      "0.0.2",
   "licenses": [{
     "type":       "MIT",
     "url":        "http://opensource.org/licenses/mit-license.php"
   }],
   "engines": {
-    "node":       ">=0.4.2"
+    "node":       ">=0.4.0"
   },
   "dependencies": {
     "express":         ">=2.0.0beta",
     "jade":            ">=0.8.5",
     "stylus":          ">=0.7.3",
     "twitter-js":      ">=0.0.5",
-    "pos":             ">=0",
-    "snowball":        ">=0",
-    "mongodb":         ">=0.9.1"
+    "pos":             ">=0.3.1",
+    "snowball":        ">=0.3.1",
+    "mongodb":         ">=0.7.8"
   },
   "main": "./server.js"
 }
