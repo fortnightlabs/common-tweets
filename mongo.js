@@ -10,8 +10,10 @@ function Mongo(options) {
   var self = this
     , env = options.env || process.env.NODE_ENV || 'development'
     , name = options.name
-    , host = options.host || 'localhost'
-    , port = options.port || Connection.DEFAULT_PORT
+    , host = options.host || process.env.MONGO_HOST || 'localhost'
+    , port = options.port || process.env.MONGO_PORT || Connection.DEFAULT_PORT
+    , user = options.user || process.env.MONGO_USER
+    , pass = options.password || process.env.MONGO_PASSWORD
     , collections = options.collections
     , server = new Server(host, port, {})
     , db = new Db(name + '_' + env, server, { native_parser: true })
@@ -22,16 +24,31 @@ function Mongo(options) {
       BSON: BSON }
     , ready = false;
 
-  EventEmitter.call(this);
+  EventEmitter.call(self);
 
+  // open the database connection, authenticating if necessary
   db.open(function(err, db) {
-    if (err) self.emit('error', err);
+    if (err) return self.emit('error', err);
+
+    if (user) {
+      db.authenticate(user, pass, loadCollections);
+    } else {
+      loadCollections();
+    }
+  });
+
+  // still fire ready if a new "ready" listener comes in after load
+  self.on('newListener', function(evt, listener) {
+    if ((evt === 'ready') && ready) listener(objs);
+  });
+
+  function loadCollections() {
     var threads = collections.length;
 
     // load collections
     collections.forEach(function(name) {
       db.collection(name, function(err, collection) {
-        if (err) self.emit('error', err);
+        if (err) return self.emit('error', err);
 
         objs[name] = collection;
         console.log('loaded collection ' + name);
@@ -42,11 +59,7 @@ function Mongo(options) {
         }
       });
     });
-  });
-
-  self.on('newListener', function(evt, listener) {
-    if ((evt === 'ready') && ready) listener(objs);
-  });
+  }
 };
 util.inherits(Mongo, EventEmitter);
 
