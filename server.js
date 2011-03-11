@@ -1,8 +1,7 @@
 var express = require('express')
   , twitter = require('twitter-js')(
       '5MvHhIgH1arjKA5HdZecw',
-      'z8KAFzE1QM9EVXz5AkjMtvJgb2mMelhhP3nJRQ1ws',
-      'http://localhost:8000/auth')
+      'z8KAFzE1QM9EVXz5AkjMtvJgb2mMelhhP3nJRQ1ws')
   , mongo = require('./mongo')({
       name: 'commontweet',
       collections: ['users', 'statuses'] })
